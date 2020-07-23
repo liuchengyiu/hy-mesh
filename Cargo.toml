@@ -1,0 +1,13 @@
+[package]
+name = "hy_mesh"
+version = "0.1.0"
+authors = ["liucehngyiu <wanchengquan@hzsaiyue.com>"]
+
+[dependencies]
+rocket = "0.4.5"
+paho-mqtt = {version = "0.7.x", default-features = false, features = ["bundled"]}
+log = "0.4"
+openssl = { version = "0.10", features = ["vendored"] }
+rustc-serialize = "0.3.18"
+chrono = { version = "0.4", features = ["serde"] }
+lazy_static = "1.0.1"
