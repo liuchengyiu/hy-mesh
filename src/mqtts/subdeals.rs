@@ -1,12 +1,12 @@
 extern crate rustc_serialize as rustc_serialize;
 use self::rustc_serialize::json;
-use frame_lib::mesh::*;
-use log;
-use frame_deal;
+use crate::frame_lib::mesh::*;
+use crate::log;
+use crate::frame_deal;
 use super::mqtt_h::*;
-use react_mqtt::init;
-fn trans_to_vec(data: &String) -> Vec<u8> {
-    let decoded: MeshMessage = json::decode(data).unwrap();
+use crate::react_mqtt::init;
+fn trans_to_vec(data: &String) -> Result<Vec<u8>, json::DecoderError> {
+    let decoded: MeshMessage = json::decode(data)?;
     let frame_str = decoded.body.data;
     let mut frame_vec: Vec<u8> = Vec::new();
     let mut count: u8 = 0;
@@ -16,7 +16,7 @@ fn trans_to_vec(data: &String) -> Vec<u8> {
         let after: u8 = hex_to_inter(b);
         if after == 16 {
             let temp: Vec<u8> = Vec::new();
-            return temp;
+            return Ok(temp);
         }
         match count {
             0 => {
@@ -36,11 +36,12 @@ fn trans_to_vec(data: &String) -> Vec<u8> {
         }
         continue;
     }
-    frame_vec
+    Ok(frame_vec)
 }
 fn get_mesh_from_vec(frame: &[u8]) -> Vec<u8> {
     let mut mesh_frame: Vec<u8> = Vec::new();
     let mut index: usize = 0;
+    
     while index < frame.len() {
         if frame[index] == 105 {
             if index+2 >= frame.len() {
@@ -75,7 +76,14 @@ fn deal_by_type(frame: &[u8]) {
     frame_deal::mesh::process_new_frame(frame);
 }
 fn deal_data(data: &String) {
-    let frame: Vec<u8> = trans_to_vec(data);
+    let mut frame: Vec<u8> = vec![];
+
+    match trans_to_vec(data) {
+        Ok(d) => {
+            frame = d; 
+        },
+        Err(_) => {}
+    }
     match frame.len() {
         0 =>{
             println!("Sorry, this vector is too short");
@@ -84,6 +92,7 @@ fn deal_data(data: &String) {
         _ => println!("continue!"),
     }
     let mesh_frame: Vec<u8> = get_mesh_from_vec(&frame);
+
     if frame_judge_crc16(&mesh_frame) == false {
         return;
     }
@@ -94,24 +103,6 @@ pub fn res_data(topic: &String, data: &String) {
         "comlm/notify/message/rfmanage/rfmanage" => {
             deal_data(data);
         },
-        "hy-mesh/topo/get" => {
-            init::reponse_topo_get("hy-mesh/topo/response");
-        },
-        "hy-mesh/nbr/get" => {
-            init::reponse_nbr_get("hy-mesh/nbr/response");
-        },
-        "hy-mesh/whitelist/get" => {
-            init::reponse_whitelist_get("hy-mesh/whitelist/response");
-        },
-        "hy-mesh/online/get" => {
-            init::reponse_online_get("hy-mesh/online/response");
-        },
-        "hy-mesh/pan_id/set" => {
-            init::set_pan_id("hy-mesh/pan_id/response", data);
-        },
-        "hy-mesh/command_node_leave/set" => {
-            init::command_node_leave("hy-mesh/command_node_leave/response", data);
-        },
-        _ => println!("something else!"),
+        _ => println!("mqtt: something else!"),
     }
 }

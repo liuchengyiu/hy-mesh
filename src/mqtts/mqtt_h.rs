@@ -1,5 +1,5 @@
 extern crate paho_mqtt as mqtt;
-use frame_lib::mesh::trans_to_string;
+use crate::frame_lib::mesh::trans_to_string;
 static mut TOKEN: u16 = 0;
 pub const TXTOPIC: &str = "rfmanage/notify/message/comlm/comlm";
 // pub struct MqttPaho<'a> {
@@ -18,7 +18,7 @@ pub struct MqttPaho {
 
 impl MqttPaho {
     pub fn publish(&mut self, topic: String, data: String) {
-        let message = mqtt::Message::new(topic, data, 1);
+        let message = mqtt::Message::new_retained(topic, data, 1);
         self.client.publish(message);
     }
     pub fn set_client(&mut self, client: mqtt::AsyncClient) {

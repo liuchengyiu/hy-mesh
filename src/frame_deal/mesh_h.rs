@@ -1,4 +1,4 @@
-use react_mqtt::init;
+use crate::react_mqtt::init;
 pub trait FrameProcessor {
     fn on_new_frame(&self, frame:&[u8]);
     fn get_frame_type(&self) -> u8;
@@ -115,6 +115,7 @@ impl FrameProcessor for Processor90 {
                 rank: rank
             })
         }
+        println!("{:?}", node_status);
         match frame.get(index) {
             Some(_) => {},
             None => return

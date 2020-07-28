@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 use super::mqtt_h::*;
 
 const TOPICS: &[&str] = &["comlm/#", "hy-mesh/#"];
-const QOS: &[i32] = &[1]; 
+const QOS: &[i32] = &[1,1]; 
 
 lazy_static! {
 //         pub static ref mqtt_paho_client: Arc<Mutex<MqttPaho<'static>>>= Arc::new(Mutex::new(MqttPaho{topics: HashMap::new()}));
@@ -76,8 +76,8 @@ pub fn init() {
         if let Some(msg) = msg {
             let topic = msg.topic();
             let payload_str = msg.payload_str();
-            subdeals::res_data(&topic.to_string(), &payload_str.to_string());
             println!("{} - {}", topic, payload_str);
+            subdeals::res_data(&topic.to_string(), &payload_str.to_string());
         }
     });
     // subdeals::res_data(
@@ -100,10 +100,6 @@ pub fn init() {
     let mut client = MQTT_PAHO_CLIENT.lock().unwrap();
     client.set_client(cli);
     // Just wait for incoming messages.
-    loop {
-        thread::sleep(Duration::from_millis(1000));
-    }
-
     // Hitting ^C will exit the app and cause the broker to publish the
     // LWT message since we're not disconnecting cleanly.
 }
