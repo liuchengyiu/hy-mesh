@@ -40,11 +40,12 @@ pub fn create_68_frame(head: u8, r#type: u8, data: &[u8], end: u8) -> Vec<u8> {
     for x in data {
         frame.push(*x)
     }
-    let mut sum: u8 = 0;
+    let mut sum: usize = 0;
     for i in &frame {
-        sum = i + sum;
+        sum = *i as usize + sum;
     }
-    frame.push(sum);
+
+    frame.push(sum as u8);
     frame.push(end);
     frame
 }

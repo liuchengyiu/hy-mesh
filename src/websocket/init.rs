@@ -62,10 +62,22 @@ pub fn init() {
                                         response = react_mqtt::init::reponse_online_get("hy-mesh/online/response");
                                     },
                                     "hy-mesh/pan_id/set" => {
-                                        react_mqtt::init::set_pan_id("rfmanage /notify/message/comlm/comlm", result.data.as_str());
+                                        react_mqtt::init::set_pan_id("rfmanage/notify/message/comlm/comlm", result.data.as_str());
                                     },
                                     "hy-mesh/command_node_leave/set" => {
                                         react_mqtt::init::command_node_leave("hy-mesh/command_node_leave/response", result.data.as_str());
+                                    },
+                                    "hy-mesh/command_register/set" => {
+                                        react_mqtt::init::command_register("rfmanage/notify/message/comlm/comlm");
+                                    },
+                                    "hy-mesh/version/search" => {
+                                        react_mqtt::init::start_get_version("rfmanage/notify/message/comlm/comlm", result.data.as_str());
+                                    },
+                                    "hy-mesh/whitelist/set" => {
+                                        react_mqtt::init::whitelist_set(result.data.as_str());
+                                    },
+                                    "hy-mesh/version/get" => {
+                                        response = react_mqtt::init::version_get("hy-mesh/version/response");
                                     },
                                     _ => {
                                         println!("else");
@@ -77,6 +89,7 @@ pub fn init() {
                             }
 
                         }
+                        println!("send back!");
                         if response != String::from("") {
                             let message = OwnedMessage::Text(response);
                             sender.send_message(&message).unwrap();

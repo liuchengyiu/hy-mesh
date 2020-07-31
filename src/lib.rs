@@ -24,6 +24,7 @@ pub mod react_mqtt {
     pub mod pan_id;
     pub mod topo;
     pub mod white_list;
+    pub mod version;
 }
 pub mod websocket {
     pub mod init;

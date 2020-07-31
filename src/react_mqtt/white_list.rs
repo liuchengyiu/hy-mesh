@@ -10,7 +10,7 @@ pub struct WhiteList {
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Device {
     pub site: String,
-    pub bar_code: Vec<u8>
+    pub bar_code: String
 }
 
 lazy_static! {
@@ -18,14 +18,18 @@ lazy_static! {
 }
 
 impl WhiteList {
-    pub fn insert_device(&mut self, mac: String, device: Device ) {
-        self.devices.insert(mac, Device{bar_code: device.bar_code.clone(), site: device.site});
+    pub fn insert_device(&mut self, mac: String, site: String, bar_code: String ) {
+        self.devices.insert(mac, Device{bar_code: bar_code, site: site});
     } 
     pub fn rm_route(&mut self, mac: String) {
         self.devices.remove(&mac);
     }
+    pub fn clear(&mut self) {
+        self.devices.clear();
+    }
     pub fn get_list(&self) -> String{
         let decoded: String = json::encode(&self.devices).unwrap();
+
         decoded
     }
 }

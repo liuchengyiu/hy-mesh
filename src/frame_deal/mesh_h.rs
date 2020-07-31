@@ -276,3 +276,24 @@ impl FrameProcessor for Processor97 {
         init::deal_node_status(node_status);
     }
 }
+
+pub struct ProcessorAA {
+    pub frame_type: u8
+}
+
+impl FrameProcessor for ProcessorAA {
+    fn get_frame_type(&self) -> u8{
+        self.frame_type
+    }
+    fn on_new_frame(&self, frame: &[u8]) {
+        match frame.get(13) {
+            Some(_) => {},
+            None => return
+        }
+        let version: Vec<u8> = vec![
+            frame[4], frame[5], frame[6], frame[7],
+            frame[8], frame[9], frame[10]
+        ];
+        init::recv_node_version(&version);
+    }
+}

@@ -9,8 +9,8 @@ use std::{
 use std::sync::{Arc, Mutex};
 use super::mqtt_h::*;
 
-const TOPICS: &[&str] = &["comlm/#", "hy-mesh/#"];
-const QOS: &[i32] = &[1,1]; 
+const TOPICS: &[&str] = &["comlm/#", "hy-mesh/#", "rfmanage/#"];
+const QOS: &[i32] = &[1,1,1]; 
 
 lazy_static! {
 //         pub static ref mqtt_paho_client: Arc<Mutex<MqttPaho<'static>>>= Arc::new(Mutex::new(MqttPaho{topics: HashMap::new()}));
@@ -19,6 +19,8 @@ lazy_static! {
 
 pub fn publish_message(topic: &str, data: String) {
     let mut client = MQTT_PAHO_CLIENT.lock().unwrap();
+
+    println!("{}", topic);
     client.publish(topic.to_string(), data);
 }
 
