@@ -27,6 +27,6 @@ pub mod react_mqtt {
     pub mod version;
 }
 pub mod websocket {
-    pub mod init;
+    // pub mod init;
     pub mod websocket_h;
 }

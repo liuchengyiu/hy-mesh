@@ -17,6 +17,8 @@ use crate::websocket::websocket_h::SocketMessage;
 use crate::mqtts::mqtt_h::MeshMessage;
 use crate::frame_lib::mesh::create_69_frame;
 use crate::frame_lib::mesh::create_68_frame;
+use std::time::Duration;
+use std::thread;
 
 #[derive(Debug)]
 #[derive(RustcDecodable, RustcEncodable)]
@@ -57,67 +59,37 @@ pub fn recv_node_reponse(mac_array: &[u8]) {
     NETTEST.lock().unwrap().recode_rx(mac);
 }
 
-pub fn recv_node_version(version: &[u8]) {
-    let mut next_mac: Vec<u8> = Vec::new();
+pub fn recv_node_version(mac: String, version: &[u8]) {
+
     
     {
         let mut node_version = NODEVERSION.lock().unwrap();
-        node_version.set_version(version);
-        next_mac = node_version.get_next_mac();
+        node_version.set_version(mac, version);
     }
-    if next_mac.len() != 16 {
-        return;
-    }
-
-    let mut data: Vec<u8> = Vec::new();
-
-    for i in &next_mac {
-        data.push(*i);
-    }
-
-    let frame_69 = create_69_frame(105, 42, &data, 67);
-    let frame_68 = create_68_frame(104, 32, &frame_69, 22);
-    let message: MeshMessage = MeshMessage::new(&frame_68);
-    let s = json::encode(&message).unwrap();
-    
-    publish_message("rfmanage/notify/message/comlm/comlm", s);
 }
 
-pub fn reponse_topo_get(topic: &str) -> String {
+pub fn reponse_topo_get(topic: &str) {
     let topo_str: String = TOPO.lock().unwrap().get_route();
-    json::encode(&SocketMessage{
-        event: topic.to_string(),
-        data: topo_str
-    }).unwrap()
-    // init::publish_message(topic, topo_str);
+
+    init::publish_message(topic, topo_str);
 }
 
-pub fn reponse_nbr_get(topic: &str) -> String {
+pub fn reponse_nbr_get(topic: &str) {
     let nbr_str: String =  NODENBR.lock().unwrap().get_route();
-    json::encode(&SocketMessage{
-        event: topic.to_string(),
-        data: nbr_str
-    }).unwrap()
-    // init::publish_message(topic, nbr_str);
+
+    init::publish_message(topic, nbr_str);
 }
 
-pub fn reponse_whitelist_get(topic: &str) -> String {
+pub fn reponse_whitelist_get(topic: &str) {
     let whitellist_str: String = WHITELIST.lock().unwrap().get_list();
 
-    json::encode(&SocketMessage{
-        event: topic.to_string(),
-        data: whitellist_str
-    }).unwrap()
-    // init::publish_message(topic, whitellist_str);
+    init::publish_message(topic, whitellist_str);
 }
 
-pub fn reponse_online_get(topic: &str) -> String {
+pub fn reponse_online_get(topic: &str) {
     let online_str: String = online::get_online();
-    json::encode(&SocketMessage{
-        event: topic.to_string(),
-        data: online_str
-    }).unwrap()
-    // init::publish_message(topic, online_str);
+
+    init::publish_message(topic, online_str);
 }
 
 pub fn set_pan_id(topic: &str, data: &str) {
@@ -128,6 +100,7 @@ pub fn set_pan_id(topic: &str, data: &str) {
         return;
     }
     publish_message(topic, frame_string);
+    publish_message("hy-mesh/pan_id/response", "{}".to_string());
 }
 
 pub fn command_node_leave(topic: &str, data: &str) {
@@ -139,6 +112,7 @@ pub fn command_node_leave(topic: &str, data: &str) {
     }
 
     publish_message(topic, frame_string);
+    publish_message("hy-mesh/command_node_leave/response", "{}".to_string());
 }
 
 pub fn command_register(topic: &str) {
@@ -154,55 +128,50 @@ pub fn command_register(topic: &str) {
     publish_message(topic, s);
 }
 
-pub fn start_get_version(topic: &str, data: &str) {
+pub fn response_start_get_version(topic: &str, data: &str) {
     let macs: Result<Vec<Vec<u8>>, json::DecoderError> = json::decode(data);
 
     match macs {
         Ok(mac) => {
-            {
-                let mut node_version = NODEVERSION.lock().unwrap();
-                node_version.set(mac.clone()); 
-            }
             if mac.len() == 0 {
                 return;
             }
-            let first = &mac[0];
-            if first.len()  != 16 {
-                return;
-            }
-            let mut data: Vec<u8> = Vec::new();
+            for i in 0 .. mac.len() {
+                let first = &mac[i];
+                if first.len()  != 16 {
+                    return;
+                }
+                let mut data: Vec<u8> = Vec::new();
 
-            for i in first {
-                data.push(*i);
-            }
+                for i in first {
+                    data.push(*i);
+                }
         
-            let frame_69 = create_69_frame(105, 42, &data, 67);
-            let frame_68 = create_68_frame(104, 32, &frame_69, 22);
-            let message: MeshMessage = MeshMessage::new(&frame_68);
-            let s = json::encode(&message).unwrap();
+                let frame_69 = create_69_frame(105, 42, &data, 67);
+                let frame_68 = create_68_frame(104, 32, &frame_69, 22);
+                let message: MeshMessage = MeshMessage::new(&frame_68);
+                let s = json::encode(&message).unwrap();
             
-            publish_message(topic, s);
+                publish_message(topic, s);
+                thread::sleep(Duration::from_millis(50));
+            }
         },
         Err(_) => {}
     }
 }
 
-pub fn version_get(topic: &str) -> String {
-    let online_str: String = NODEVERSION.lock().unwrap().get_version();
+pub fn response_version_get(topic: &str) {
+    let node_version_str: String = NODEVERSION.lock().unwrap().get_version();
 
-    json::encode(&SocketMessage{
-        event: topic.to_string(),
-        data: online_str
-    }).unwrap()
+    publish_message(topic, node_version_str);
 }
 
-pub fn whitelist_set(data: &str) {
+pub fn response_whitelist_set(data: &str) {
     let result: Result<Vec<Device>, json::DecoderError> = json::decode(data);
 
     match result {
         Ok(lists) => {
             if lists.len() == 0 {
-                println!("whist list data LEN == 0");
                 return;
             }
             {
@@ -215,8 +184,66 @@ pub fn whitelist_set(data: &str) {
             }
         },
         Err(_) => {
-            println!("whist list data error");
             return;
         }
     }
+}
+
+pub fn response_net_test_set(topic: &str, data: &str) {
+    let result: Result<Vec<u16>, json::DecoderError> = json::decode(data); 
+
+    match result {
+        Ok(config) => {
+            match config.get(1) {
+                Some(_) => {},
+                None => {
+                    publish_message(topic, "test config data error".to_string());
+                    return;
+                }
+            }
+            {
+                let mut net_test = NETTEST.lock().unwrap();
+                if net_test.test.flag == true {
+                    publish_message(topic, "test is already started".to_string());
+                    return;
+                }
+                net_test.init(config[0], config[1]);
+            }
+        },
+        Err(_) => {
+            publish_message(topic, "test config data error".to_string());
+            return;
+        }
+    }
+    publish_message(topic, "test config success".to_string());
+}
+
+pub fn response_net_test_stop(topic: &str) {
+    {
+        let mut net_test = NETTEST.lock().unwrap();
+        if net_test.test.flag == false {
+            publish_message(topic, "test is already stopped".to_string());
+            return;
+        }
+        net_test.stop_test();
+    }
+    publish_message(topic, "test success".to_string());
+}
+
+pub fn response_net_test_start(topic: &str) {
+    {
+        let mut net_test = NETTEST.lock().unwrap();
+        if net_test.test.flag == true {
+            publish_message(topic, "test is already started".to_string());
+            return;
+        }
+        net_test.start_test();
+    }
+    publish_message(topic, "test success".to_string());  
+}
+
+pub fn response_net_test_get(topic: &str) {
+    let net_test_str: String = NETTEST.lock().unwrap().get_test();
+
+    publish_message(topic, net_test_str);
 }

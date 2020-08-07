@@ -20,14 +20,11 @@ lazy_static! {
 pub fn publish_message(topic: &str, data: String) {
     let mut client = MQTT_PAHO_CLIENT.lock().unwrap();
 
-    println!("{}", topic);
     client.publish(topic.to_string(), data);
 }
 
 fn on_connect_success(cli: &mqtt::AsyncClient, _msgid: u16) {
-    println!("Connection Succeeded");
     cli.subscribe_many(TOPICS, QOS);
-    println!("sub scribing to topics: {:?}", TOPICS);
 }
 
 fn on_connect_failure(cli: &mqtt::AsyncClient, _msgid: u16, rc: i32) {
@@ -42,7 +39,7 @@ pub fn init() {
     // Initialize the logger from the environment
 
     let host = env::args().nth(1).unwrap_or_else(||
-        "tcp://127.0.0.1:1883".to_string()
+        "tcp://183.134.216.83:10036".to_string()
     );
 
     // Create the client. Use an ID for a persistent session.

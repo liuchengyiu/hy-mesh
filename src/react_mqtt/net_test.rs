@@ -49,7 +49,7 @@ impl NetTest {
             return;
         }
         self.test.flag = true;
-        self.tx.lock().unwrap().send(json::encode(&json::encode(&self.test).unwrap()).unwrap()).unwrap();
+        self.tx.lock().unwrap().send(json::encode(&self.test).unwrap());
     }
 
     pub fn recode_rx(&mut self, mac: String) {
@@ -64,6 +64,20 @@ impl NetTest {
             None => return
         }
         self.test.res.insert(mac, time + 1);
+    }
+
+    pub fn recode_tx(&mut self, mac: String) {
+        if self.test.flag == false {
+            return;
+        }
+        let mut time: u16 = 0;
+        match self.test.send.get(&mac) {
+            Some(d) => {
+                time = *d + 1;
+            },
+            None => return
+        }
+        self.test.send.insert(mac, time);
     }
 
     pub fn stop_test(&mut self) {
@@ -83,6 +97,10 @@ impl NetTest {
         NetTest {test: Test {flag: false, res: HashMap::new(), 
                             send: HashMap::new(), interval: 0, duration: 0}, 
                 tx: sender}
+    }
+    pub fn get_test(&self) -> String{
+        let decoded: String = json::encode(&self.test).unwrap();
+        decoded
     }
 }
 
@@ -120,6 +138,9 @@ fn new_thread(receiver: Arc<Mutex<Receiver<String>>>) {
             let message: MeshMessage = MeshMessage::new(&frame_68);
             let mut sleep_time = 0;
             publish_message(TXTOPIC, json::encode(&message).unwrap());
+            {
+                NETTEST.lock().unwrap().recode_tx(mac);
+            }
             while sleep_time < test.interval {
                 thread::sleep(Duration::from_secs(1));
                 match rx.try_recv() {
@@ -133,6 +154,9 @@ fn new_thread(receiver: Arc<Mutex<Receiver<String>>>) {
             }
             time = time + test.interval;
             index = index + 1;
+        }
+        {
+            NETTEST.lock().unwrap().test.flag = false;
         }
     });
 }

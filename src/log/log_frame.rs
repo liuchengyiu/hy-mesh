@@ -14,7 +14,6 @@ fn get_file_object() -> Result<File, std::io::Error> {
         true => {
             let mut f = OpenOptions::new().write(true).read(true).open(path)?;
             let len = f.metadata()?.len();
-            println!("Metadata length :{:?}", f.metadata());
             if len < 4 {
                 let pointer:Vec<u8> = vec![4, 0, 0, 0];
                 match f.write(&pointer) {
@@ -22,7 +21,6 @@ fn get_file_object() -> Result<File, std::io::Error> {
                        return Ok(f);
                     },
                     Err(err) => {
-                        println!("Error:{}", err);
                         return Err(err);
                     } 
                 }    
@@ -49,7 +47,6 @@ fn get_file_pointer() -> Result<u32, std::io::Error> {
     let mut now_file_pointer:u32 = 0;
     file.seek(SeekFrom::Start(0))?;
     file.read(&mut file_point)?;
-    println!("{:?}", file_point);
     for j in 0..4 {
         now_file_pointer = now_file_pointer + file_point[j] as u32 * 256u32.pow(j as u32);
     }
@@ -71,7 +68,6 @@ fn gen_log_frame(frame: &[u8]) -> Result<Vec<u8>, std::io::Error> {
     for i in frame {
         log_frame.push(*i)
     }
-    println!("{:?}", log_frame);
     Ok(log_frame)
 }
 

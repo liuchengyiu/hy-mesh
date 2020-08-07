@@ -72,6 +72,7 @@ def dealData(data):
 							i = i + 1;
 						else :
 							if data_[-1]==67:
+								print(data_)
 								mqttc.publish("comlm/notify/message/rfmanage/rfmanage", genPubString(data_))
 								i = i +container[i+1]+container[i+2]*256;
 							else : 
@@ -100,7 +101,7 @@ def dealsend(data):
 							i = i + 1;
 						else :
 							if data_[-1]==67:
-								print(bytes(data_));
+								print(data_);
 								ser.write(bytes(data_));
 								i = i +send_container[i+1]+send_container[i+2]*256;
 							else : 

@@ -1,4 +1,5 @@
 use crate::react_mqtt::init;
+use crate::frame_lib::mesh::trans_to_string;
 pub trait FrameProcessor {
     fn on_new_frame(&self, frame:&[u8]);
     fn get_frame_type(&self) -> u8;
@@ -115,7 +116,6 @@ impl FrameProcessor for Processor90 {
                 rank: rank
             })
         }
-        println!("{:?}", node_status);
         match frame.get(index) {
             Some(_) => {},
             None => return
@@ -144,7 +144,6 @@ impl FrameProcessor for Processor90 {
                 lqi: lqi
             })
         }
-        println!("{:?}", node_status);
         init::deal_node_status(node_status);
     }
 }
@@ -272,7 +271,6 @@ impl FrameProcessor for Processor97 {
                 lqi: lqi
             })
         }
-        println!("{:?}", node_status);
         init::deal_node_status(node_status);
     }
 }
@@ -286,14 +284,19 @@ impl FrameProcessor for ProcessorAA {
         self.frame_type
     }
     fn on_new_frame(&self, frame: &[u8]) {
-        match frame.get(13) {
+        match frame.get(29) {
             Some(_) => {},
             None => return
         }
+        let mut mac: Vec<u8> = Vec::new();
+        for i in 4..20 {
+            mac.push(frame[i]);
+        }
         let version: Vec<u8> = vec![
-            frame[4], frame[5], frame[6], frame[7],
-            frame[8], frame[9], frame[10]
+            frame[20], frame[21], frame[22], frame[23],
+            frame[24], frame[25], frame[26]
         ];
-        init::recv_node_version(&version);
+        let mac_string: String = trans_to_string(&mac);
+        init::recv_node_version(mac_string, &version);
     }
 }

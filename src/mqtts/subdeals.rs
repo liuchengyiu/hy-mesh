@@ -4,7 +4,7 @@ use crate::frame_lib::mesh::*;
 use crate::log;
 use crate::frame_deal;
 use super::mqtt_h::*;
-use crate::react_mqtt::init;
+use crate::react_mqtt;
 fn trans_to_vec(data: &String) -> Result<Vec<u8>, json::DecoderError> {
     let decoded: MeshMessage = json::decode(data)?;
     let frame_str = decoded.body.data;
@@ -30,7 +30,6 @@ fn trans_to_vec(data: &String) -> Result<Vec<u8>, json::DecoderError> {
                 dec = 0;
             },
             _ => {
-                println!("bad loop");
                 break;
             }
         }
@@ -69,10 +68,10 @@ fn get_mesh_from_vec(frame: &[u8]) -> Vec<u8> {
 }
 
 fn deal_by_type(frame: &[u8]) {
-    // match log::log_frame::log_mesh_frame(frame) {
-    //     Ok(_) => println!("write ok"),
-    //     Err(_) => println!("write err")
-    // }
+    match log::log_frame::log_mesh_frame(frame) {
+        Ok(_) => println!("write ok"),
+        Err(_) => println!("write err")
+    }
     frame_deal::mesh::process_new_frame(frame);
 }
 fn deal_data(data: &String) {
@@ -86,10 +85,9 @@ fn deal_data(data: &String) {
     }
     match frame.len() {
         0 =>{
-            println!("Sorry, this vector is too short");
             return;
         },
-        _ => println!("continue!"),
+        _ => {},
     }
     let mesh_frame: Vec<u8> = get_mesh_from_vec(&frame);
 
@@ -99,10 +97,62 @@ fn deal_data(data: &String) {
     deal_by_type(&mesh_frame);
 }
 pub fn res_data(topic: &String, data: &String) {
+    let d: Result<MeshMessage, json::DecoderError> = json::decode(data);
+    let mut result: MeshMessage = MeshMessage::new(&[0]);
+    match d {
+        Ok(d_) => {
+            result = d_;
+        },
+        Err(_) => {
+            return;
+        }
+    }
     match topic.trim().as_ref() {
         "comlm/notify/message/rfmanage/rfmanage" => {
             deal_data(data);
         },
-        _ => println!("mqtt: something else!"),
+        "hy-mesh/topo/get" => {
+            react_mqtt::init::reponse_topo_get("hy-mesh/topo/response");
+        },
+        "hy-mesh/nbr/get" => {
+            react_mqtt::init::reponse_nbr_get("hy-mesh/nbr/response");
+        },
+        "hy-mesh/whitelist/get" => {
+            react_mqtt::init::reponse_whitelist_get("hy-mesh/whitelist/response");
+        },
+        "hy-mesh/online/get" => {
+            react_mqtt::init::reponse_online_get("hy-mesh/online/response");
+        },
+        "hy-mesh/pan_id/set" => {
+            react_mqtt::init::set_pan_id("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
+        },
+        "hy-mesh/command_node_leave/set" => {
+            react_mqtt::init::command_node_leave("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
+        },
+        "hy-mesh/command_register/set" => {
+            react_mqtt::init::command_register("rfmanage/notify/message/comlm/comlm");
+        },
+        "hy-mesh/version/search" => {
+            react_mqtt::init::response_start_get_version("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
+        },
+        "hy-mesh/whitelist/set" => {
+            react_mqtt::init::response_whitelist_set(result.body.data.as_str());
+        },
+        "hy-mesh/version/get" => {
+            react_mqtt::init::response_version_get("hy-mesh/version/response");
+        },
+        "hy-mesh/net_test/set" => {
+            react_mqtt::init::response_net_test_set("hy-mesh/test/set/response",result.body.data.as_str());
+        },
+        "hy-mesh/net_test/start" => {
+            react_mqtt::init::response_net_test_start("hy-mesh/test/start/response");
+        },
+        "hy-mesh/net_test/stop" => {
+            react_mqtt::init::response_net_test_stop("hy-mesh/test/stop/response");
+        },
+        "hy-mesh/net_test/get" => {
+            react_mqtt::init::response_net_test_get("hy-mesh/net_test/response");
+        },
+        _ => {},
     }
 }

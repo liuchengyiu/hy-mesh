@@ -68,6 +68,9 @@ fn crc16_a001(data: &[u8]) -> u16 {
 }
 
 pub fn frame_judge_crc16(data: &Vec<u8>) -> bool {
+    if data.len() < 7 {
+        return false;
+    }
     let (left, right) = data.split_at(data.len() - 3 );
     let crc_cal: u16 = crc16_a001(&left);
     let crc_now : u16 = (right[0] as u16) + (right[1] as u16) * 256;
@@ -131,7 +134,6 @@ pub fn trans_to_vec(data: &String) -> Vec<u8> {
                 dec = 0;
             },
             _ => {
-                println!("bad loop");
                 break;
             }
         }

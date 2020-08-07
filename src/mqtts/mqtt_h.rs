@@ -1,4 +1,6 @@
 extern crate paho_mqtt as mqtt;
+extern crate chrono;
+use chrono::prelude::*;
 use crate::frame_lib::mesh::trans_to_string;
 static mut TOKEN: u16 = 0;
 pub const TXTOPIC: &str = "rfmanage/notify/message/comlm/comlm";
@@ -53,7 +55,8 @@ impl MeshMessage {
             token = TOKEN;
             TOKEN = TOKEN + 1;
         }
-        MeshMessage{token:token.to_string(), timestamp:"".to_string(), 
+        let dt = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+        MeshMessage{token:token.to_string(), timestamp: dt, 
                         body: MeshMessageBody{r#type: r#type, len: len, data: d_string}}
     }
 }
