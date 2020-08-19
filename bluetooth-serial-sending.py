@@ -71,8 +71,22 @@ def dealData(data):
 						if (len(data_)<7):
 							i = i + 1;
 						else :
-							if data_[-1]==67:
+							if data_[-1] == 67:
 								print(data_)
+								if data_[3] == int("82", 16):
+									print("fuck you");
+									ser.write(bytes([
+										int("69",16), int("27", 16), 0, 2, 0, 
+										int("aa", 16), int("aa", 16), int("aa", 16), int("aa", 16), int("aa", 16), int("aa", 16),
+										 1, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+										 int("4c", 16), int("61", 16), int("43", 16)
+									]));
+								if data_[3] == 157:
+									ser.write(bytes([
+										int("69",16), int("0d", 16), 0, int("1d", 16), 
+										11, 1, 1, 1, 1, 16, 
+										 int("5a", 16), int("dc", 16), int("43", 16)
+									]));
 								mqttc.publish("comlm/notify/message/rfmanage/rfmanage", genPubString(data_))
 								i = i +container[i+1]+container[i+2]*256;
 							else : 
@@ -164,6 +178,7 @@ def main():
 	
 if __name__ == '__main__':
 	print(sys.argv)
+	print(int("82", 16))
 	t = threading.Thread(target=mqtt_init);
 	t.start();
 	if(len(sys.argv)<2):
