@@ -1,8 +1,9 @@
-use crate::frame_deal::mesh_h::NetNbr;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use std::string::String as String;
-use crate::frame_lib::mesh::trans_to_string;
+use crate::sl_mesh::{processor::mesh_h::NetNbr, lib::mesh::trans_to_string};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    string::String as String
+};
 extern crate rustc_serialize as rustc_serialize;
 use self::rustc_serialize::json;
 #[derive(RustcDecodable, RustcEncodable)]
@@ -21,9 +22,7 @@ impl NodeNbr {
             return;
         }
         node_mac = trans_to_string(&mac);
-        let decoded: String = json::encode(nbr).unwrap();
-        let encode: Vec<NetNbr> = json::decode(&decoded).unwrap();
-        self.nbrs.insert(node_mac, encode);
+        self.nbrs.insert(node_mac, nbr.clone());
     }
     pub fn rm_route(&mut self, mac: &[u8]) {
         let mut node_mac: String = String::new(); 

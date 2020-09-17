@@ -422,20 +422,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd179ae861f0c2e53da70d892f5f3029f9594be0c41dc5269cd371691b1dc2f9"
 
 [[package]]
-name = "hy_mesh"
-version = "0.1.0"
-dependencies = [
- "async-std",
- "chrono",
- "lazy_static",
- "log 0.4.8",
- "openssl",
- "paho-mqtt",
- "rustc-serialize",
- "websocket",
-]
-
-[[package]]
 name = "hyper"
 version = "0.10.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -564,6 +550,20 @@ name = "memchr"
 version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3728d817d99e5ac407411fa471ff9800a778d88a24685968b36824eaf4bee400"
+
+[[package]]
+name = "mesh_monitor"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "chrono",
+ "lazy_static",
+ "log 0.4.8",
+ "openssl",
+ "paho-mqtt",
+ "rustc-serialize",
+ "websocket",
+]
 
 [[package]]
 name = "mime"

@@ -1,13 +1,17 @@
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use std::string::String as String;
-use std::sync::mpsc::*;
-use std::thread;
-use crate::mqtts::mqtt_h::TXTOPIC;
-use std::time::Duration;
-use crate::mqtts::init::publish_message;
-use crate::mqtts::mqtt_h::MeshMessage;
-use crate::frame_lib::mesh::*;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    string::String as String,
+    sync::mpsc::*,
+    thread,
+    time::Duration
+};
+use crate::mqtts::{
+    mqtt_h::TXTOPIC,
+    init::publish_message,
+    mqtt_h::MeshMessage
+};
+use crate::sl_mesh::lib::mesh::*;
 extern crate rustc_serialize as rustc_serialize;
 use self::rustc_serialize::json;
 pub struct NetTest {
@@ -100,6 +104,7 @@ impl NetTest {
     }
     pub fn get_test(&self) -> String{
         let decoded: String = json::encode(&self.test).unwrap();
+        
         decoded
     }
 }

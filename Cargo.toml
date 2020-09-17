@@ -1,5 +1,5 @@
 [package]
-name = "hy_mesh"
+name = "mesh_monitor"
 version = "0.1.0"
 authors = ["liucehngyiu <wanchengquan@hzsaiyue.com>"]
 edition = "2018"

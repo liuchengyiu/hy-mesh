@@ -1,13 +1,12 @@
 extern crate paho_mqtt as mqtt;
-use super::subdeals;
+use super::{subdeals, mqtt_h::*};
 use std::{
     env,
     process,
     thread,
     time::Duration,
+    sync::{Arc, Mutex}
 };
-use std::sync::{Arc, Mutex};
-use super::mqtt_h::*;
 
 const TOPICS: &[&str] = &["comlm/#", "hy-mesh/#", "rfmanage/#"];
 const QOS: &[i32] = &[1,1,1]; 
@@ -39,7 +38,7 @@ pub fn init() {
     // Initialize the logger from the environment
 
     let host = env::args().nth(1).unwrap_or_else(||
-        "tcp://183.134.216.83:10036".to_string()
+        "tcp://127.0.0.1:1883".to_string()
     );
 
     // Create the client. Use an ID for a persistent session.

@@ -1,14 +1,16 @@
 extern crate chrono;
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::path::Path;
-use std::io::SeekFrom;
-use std::io::Write;
-use std::io::Read;
-use std::io::prelude::*;
 use self::chrono::prelude::*;
+use std::{
+    fs::File,
+    fs::OpenOptions,
+    path::Path,
+    io::SeekFrom,
+    io::Write,
+    io::Read,
+    io::prelude::*
+};
 fn get_file_object() -> Result<File, std::io::Error> {
-    let log_file_path: String = "log".to_string();
+    let log_file_path: String = "/root/log".to_string();
     let path = Path::new(&log_file_path);
     match path.exists() {
         true => {

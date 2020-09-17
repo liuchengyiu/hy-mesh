@@ -1,6 +1,6 @@
 extern crate rustc_serialize as rustc_serialize;
 use self::rustc_serialize::json;
-use crate::frame_lib::mesh::*;
+use crate::sl_mesh::lib::mesh::*;
 use crate::mqtts::mqtt_h::MeshMessage;
 
 #[derive(RustcDecodable, RustcEncodable)]

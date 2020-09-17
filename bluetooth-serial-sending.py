@@ -42,7 +42,7 @@ def genPubString(data):
 		"body": {
 			"type":255,
 			"len": 33,
-			"data":""
+			"data":{}
 		}
 	}
 	result = "";

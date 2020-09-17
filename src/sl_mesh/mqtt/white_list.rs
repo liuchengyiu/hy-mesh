@@ -1,6 +1,9 @@
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use std::string::String as String;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    string::String as String
+};
+
 extern crate rustc_serialize as rustc_serialize;
 use self::rustc_serialize::json;
 #[derive(RustcDecodable, RustcEncodable)]

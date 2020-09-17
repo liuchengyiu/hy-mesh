@@ -1,5 +1,8 @@
-use crate::react_mqtt::init;
-use crate::frame_lib::mesh::trans_to_string;
+use crate::sl_mesh::{
+    mqtt::init,
+    lib::mesh::trans_to_string
+};
+
 pub trait FrameProcessor {
     fn on_new_frame(&self, frame:&[u8]);
     fn get_frame_type(&self) -> u8;
@@ -37,21 +40,24 @@ impl FrameProcessorMaster {
 pub struct Processor90 {
     pub frame_type: u8
 }
-#[derive(Debug)]
+
+#[derive(Clone)]
 pub struct NodeStatus {
     pub mac: Vec<u8>,
     pub net_routes: Vec<NetRoute>,
     pub nbrs: Vec<NetNbr>
 }
-#[derive(Debug)]
+
+#[derive(Clone)]
 pub struct NetRoute {
     pub parent_mac: Vec<u8>,
     pub pan_id: u16,
     pub layer: u8,
     pub rank: u32
 }
-#[derive(Debug)]
+
 #[derive(RustcDecodable, RustcEncodable)]
+#[derive(Clone)]
 pub struct NetNbr {
     pub nbr_mac: Vec<u8>,
     pub rssi: u8,

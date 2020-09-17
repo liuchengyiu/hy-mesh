@@ -1,24 +1,27 @@
 extern crate rustc_serialize as rustc_serialize;
 use self::rustc_serialize::json;
-use crate::frame_deal::mesh_h::NodeStatus;
-use crate::frame_lib::mesh::trans_to_string;
-use super::online::*;
-use super::topo::TOPO;
-use super::nbr::NODENBR;
-use super::net_test::NETTEST;
-use super::white_list::WHITELIST;
-use super::version::NODEVERSION;
-use super::online;
-use crate::mqtts::init;
-use super::pan_id;
-use super::node_leave;
-use crate::mqtts::init::publish_message;
-use crate::websocket::websocket_h::SocketMessage;
+use super::{
+    online::*,
+    topo::TOPO,
+    nbr::NODENBR,
+    net_test::NETTEST,    
+    white_list::WHITELIST,
+    version::NODEVERSION,
+    online,
+    pan_id,
+    node_leave,
+};
+use crate::mqtts::{
+    init,
+    init::publish_message 
+};
 use crate::mqtts::mqtt_h::MeshMessage;
-use crate::frame_lib::mesh::create_69_frame;
-use crate::frame_lib::mesh::create_68_frame;
-use std::time::Duration;
-use std::thread;
+use crate::sl_mesh::{
+    processor::mesh_h::NodeStatus,
+    lib::mesh
+};
+use std::{time::Duration, thread};
+// use crate::websocket::websocket_h::SocketMessage;
 
 #[derive(Debug)]
 #[derive(RustcDecodable, RustcEncodable)]
@@ -29,7 +32,7 @@ struct Device {
 }
 
 pub fn deal_node_status(node_status: NodeStatus) {
-    let mac: String = trans_to_string(&node_status.mac);
+    let mac: String = mesh::trans_to_string(&node_status.mac);
 
     node_in(&mac);
     if node_status.net_routes.len() > 0 {
@@ -47,14 +50,14 @@ pub fn deal_node_status(node_status: NodeStatus) {
 
 pub fn deal_node_leave(node_mac: Vec<Vec<u8>>) {
     for i in node_mac {
-        let mac: String = trans_to_string(&i);
+        let mac: String = mesh::trans_to_string(&i);
 
         node_out(&mac);
     }
 }
 
 pub fn recv_node_reponse(mac_array: &[u8]) {
-    let mac: String = trans_to_string(mac_array);
+    let mac: String = mesh::trans_to_string(mac_array);
     
     NETTEST.lock().unwrap().recode_rx(mac);
 }
@@ -118,8 +121,8 @@ pub fn command_node_leave(topic: &str, data: &str) {
 pub fn command_register(topic: &str) {
     let mut data: Vec<u8> = Vec::new();
     data.push(255);
-    let frame_69 = create_69_frame(105, 19, &data, 67);
-    let frame_68 = create_68_frame(104, 32, &frame_69, 22);
+    let frame_69 = mesh::create_69_frame(105, 19, &data, 67);
+    let frame_68 = mesh::create_68_frame(104, 32, &frame_69, 22);
 
     let message: MeshMessage = MeshMessage::new(&frame_68);
 
@@ -147,8 +150,8 @@ pub fn response_start_get_version(topic: &str, data: &str) {
                     data.push(*i);
                 }
         
-                let frame_69 = create_69_frame(105, 42, &data, 67);
-                let frame_68 = create_68_frame(104, 32, &frame_69, 22);
+                let frame_69 = mesh::create_69_frame(105, 42, &data, 67);
+                let frame_68 = mesh::create_68_frame(104, 32, &frame_69, 22);
                 let message: MeshMessage = MeshMessage::new(&frame_68);
                 let s = json::encode(&message).unwrap();
             

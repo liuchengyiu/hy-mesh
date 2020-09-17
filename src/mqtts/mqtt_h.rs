@@ -1,19 +1,35 @@
 extern crate paho_mqtt as mqtt;
 extern crate chrono;
 use chrono::prelude::*;
-use crate::frame_lib::mesh::trans_to_string;
-static mut TOKEN: u16 = 0;
-pub const TXTOPIC: &str = "rfmanage/notify/message/comlm/comlm";
-// pub struct MqttPaho<'a> {
-//     pub topics: HashMap<String, mqtt::topic::Topic<'a>>
-// }
+use crate::common::tool::trans_to_string;
+use std::{
+    sync::{Arc, Mutex},
+};
+lazy_static! {
+    static ref TOKEN: Arc<Mutex<Token>> = Arc::new(Mutex::new(Token::new(0)));
+}
 
-// impl<'a> MqttPaho<'a> {
-//     pub fn publish(&mut self, topic: String, data: String) {
-//         let message = mqtt::Message::new(topic, data, 1);
-        
-//     }
-// }
+struct Token {
+    token: u16
+}
+
+impl Token {
+    pub fn new(init_num: u16) -> Token {
+        Token {token: init_num}
+    }
+    pub fn add(&mut self, add_num: u16) {
+        self.token = self.token + add_num;
+    }
+    pub fn get(&self) -> u16 {
+        self.token
+    }
+    pub fn set(&mut self, set_num: u16) {
+        self.token = set_num;
+    }
+}
+
+pub const TXTOPIC: &str = "rfmanage/notify/message/comlm/comlm";
+
 pub struct MqttPaho {
     pub client: mqtt::AsyncClient
 }
@@ -29,6 +45,7 @@ impl MqttPaho {
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
+#[derive(Clone)]
 pub struct MeshMessage {
     pub token: String,
     pub timestamp: String,
@@ -36,6 +53,7 @@ pub struct MeshMessage {
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
+#[derive(Clone)]
 pub struct MeshMessageBody {
     pub r#type: u8,
     pub len: u32,
@@ -44,19 +62,16 @@ pub struct MeshMessageBody {
 
 impl MeshMessage {
     pub fn new(data: &[u8]) -> MeshMessage {
-        let mut token: u16 = 0;
         let len: u32 = data.len() as u32 *2;
         let r#type: u8 = 255;
         let d_string: String = trans_to_string(data);
-        unsafe {
-            if TOKEN > 4096 {
-                TOKEN = 0;
-            }
-            token = TOKEN;
-            TOKEN = TOKEN + 1;
+        let mut token = TOKEN.lock().unwrap();
+        if  token.get() > 4096 {
+            token.set(0);
         }
+        token.add(1);
         let dt = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
-        MeshMessage{token:token.to_string(), timestamp: dt, 
+        MeshMessage{token: token.get().to_string(), timestamp: dt, 
                         body: MeshMessageBody{r#type: r#type, len: len, data: d_string}}
     }
 }

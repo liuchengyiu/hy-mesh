@@ -1,10 +1,7 @@
 extern crate rustc_serialize as rustc_serialize;
 use self::rustc_serialize::json;
-use crate::frame_lib::mesh::*;
-use crate::log;
-use crate::frame_deal;
+use crate::{sl_mesh, sl_mesh::lib::mesh::*, log};
 use super::mqtt_h::*;
-use crate::react_mqtt;
 fn trans_to_vec(data: &String) -> Result<Vec<u8>, json::DecoderError> {
     let decoded: MeshMessage = json::decode(data)?;
     let frame_str = decoded.body.data;
@@ -72,7 +69,7 @@ fn deal_by_type(frame: &[u8]) {
         Ok(_) => println!("write ok"),
         Err(_) => println!("write err")
     }
-    frame_deal::mesh::process_new_frame(frame);
+    sl_mesh::processor::mesh::process_new_frame(frame);
 }
 fn deal_data(data: &String) {
     let mut frame: Vec<u8> = vec![];
@@ -99,6 +96,7 @@ fn deal_data(data: &String) {
 pub fn res_data(topic: &String, data: &String) {
     let d: Result<MeshMessage, json::DecoderError> = json::decode(data);
     let mut result: MeshMessage = MeshMessage::new(&[0]);
+
     match d {
         Ok(d_) => {
             result = d_;
@@ -107,51 +105,52 @@ pub fn res_data(topic: &String, data: &String) {
             return;
         }
     }
+
     match topic.trim().as_ref() {
         "comlm/notify/message/rfmanage/rfmanage" => {
             deal_data(data);
         },
         "hy-mesh/topo/get" => {
-            react_mqtt::init::reponse_topo_get("hy-mesh/topo/response");
+            sl_mesh::mqtt::init::reponse_topo_get("hy-mesh/topo/response");
         },
         "hy-mesh/nbr/get" => {
-            react_mqtt::init::reponse_nbr_get("hy-mesh/nbr/response");
+            sl_mesh::mqtt::init::reponse_nbr_get("hy-mesh/nbr/response");
         },
         "hy-mesh/whitelist/get" => {
-            react_mqtt::init::reponse_whitelist_get("hy-mesh/whitelist/response");
+            sl_mesh::mqtt::init::reponse_whitelist_get("hy-mesh/whitelist/response");
         },
         "hy-mesh/online/get" => {
-            react_mqtt::init::reponse_online_get("hy-mesh/online/response");
+            sl_mesh::mqtt::init::reponse_online_get("hy-mesh/online/response");
         },
         "hy-mesh/pan_id/set" => {
-            react_mqtt::init::set_pan_id("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
+            sl_mesh::mqtt::init::set_pan_id("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
         },
         "hy-mesh/command_node_leave/set" => {
-            react_mqtt::init::command_node_leave("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
+            sl_mesh::mqtt::init::command_node_leave("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
         },
         "hy-mesh/command_register/set" => {
-            react_mqtt::init::command_register("rfmanage/notify/message/comlm/comlm");
+            sl_mesh::mqtt::init::command_register("rfmanage/notify/message/comlm/comlm");
         },
         "hy-mesh/version/search" => {
-            react_mqtt::init::response_start_get_version("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
+            sl_mesh::mqtt::init::response_start_get_version("rfmanage/notify/message/comlm/comlm", result.body.data.as_str());
         },
         "hy-mesh/whitelist/set" => {
-            react_mqtt::init::response_whitelist_set(result.body.data.as_str());
+            sl_mesh::mqtt::init::response_whitelist_set(result.body.data.as_str());
         },
         "hy-mesh/version/get" => {
-            react_mqtt::init::response_version_get("hy-mesh/version/response");
+            sl_mesh::mqtt::init::response_version_get("hy-mesh/version/response");
         },
         "hy-mesh/net_test/set" => {
-            react_mqtt::init::response_net_test_set("hy-mesh/test/set/response",result.body.data.as_str());
+            sl_mesh::mqtt::init::response_net_test_set("hy-mesh/test/set/response",result.body.data.as_str());
         },
         "hy-mesh/net_test/start" => {
-            react_mqtt::init::response_net_test_start("hy-mesh/test/start/response");
+            sl_mesh::mqtt::init::response_net_test_start("hy-mesh/test/start/response");
         },
         "hy-mesh/net_test/stop" => {
-            react_mqtt::init::response_net_test_stop("hy-mesh/test/stop/response");
+            sl_mesh::mqtt::init::response_net_test_stop("hy-mesh/test/stop/response");
         },
         "hy-mesh/net_test/get" => {
-            react_mqtt::init::response_net_test_get("hy-mesh/net_test/response");
+            sl_mesh::mqtt::init::response_net_test_get("hy-mesh/net_test/response");
         },
         _ => {},
     }
